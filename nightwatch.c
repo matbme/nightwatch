@@ -6,8 +6,11 @@
 #include <dirent.h>
 #include "config_params.c"
 
+cf_params initParams();
+
 int main() {
-	cf_params *prms;
+	cf_params prms = initParams();
+
 	char *user = getlogin();
 	time_t rtime = time(NULL);
 	struct tm *ctime_t = localtime(&rtime);
@@ -31,20 +34,16 @@ int main() {
 	FILE *cfg = fopen(configPath, "r");
 	if (cfg == NULL) {
 		puts("No configuration file detected! Using defaults...");
-		strcpy(prms->light_mode_time, "08:00");
-		strcpy(prms->dark_mode_time, "20:00");
 	} else {
 		puts("Getting config...");
-		prms = read_config_file(configPath);
+		read_config_file(configPath, prms);
 		puts("Config read!");
 	}
 
-	printf("%s - %s", prms->light_mode_time, prms->dark_mode_time);
-
-	int nl_time = ( (prms->light_mode_time[0] - '0') * 10 + (prms->light_mode_time[1] - '0') ) * 60 +
-				  ( (prms->light_mode_time[3] - '0') * 10 + (prms->light_mode_time[4] - '0') );
-	int nd_time = ( (prms->dark_mode_time[0] - '0') * 10 + (prms->dark_mode_time[1] - '0') ) * 60 +
-				  ( (prms->dark_mode_time[3] - '0') * 10 + (prms->dark_mode_time[4] - '0') );
+	int nl_time = ( (prms.light_mode_time[0] - '0') * 10 + (prms.light_mode_time[1] - '0') ) * 60 +
+				  ( (prms.light_mode_time[3] - '0') * 10 + (prms.light_mode_time[4] - '0') );
+	int nd_time = ( (prms.dark_mode_time[0] - '0') * 10 + (prms.dark_mode_time[1] - '0') ) * 60 +
+				  ( (prms.dark_mode_time[3] - '0') * 10 + (prms.dark_mode_time[4] - '0') );
 
 	while (1) {
 		// read time
@@ -110,4 +109,14 @@ int main() {
 
 	exit(0);
 }
+
+cf_params initParams() {
+	cf_params fileConfigs = {
+		.light_mode_time = "08:00",
+		.dark_mode_time = "20:00"
+	};
+
+	return fileConfigs;
+}
+
 // And now my watch has ended.

@@ -29,16 +29,9 @@ int getParamInt(char *path, char *param) {
 	return 0;
 }
 
-cf_params *read_config_file(char *path) {
-	cf_params *fileConfigs = &(struct config_params) {
-		.light_mode_time = "",
-		.dark_mode_time = ""
-	};
-
+void read_config_file(char *path, cf_params params) {
 	// TODO: Check if value is not in config file
-	fileConfigs->light_mode_time = getParamChar(path, "light_mode_time");
-	fileConfigs->dark_mode_time = getParamChar(path, "dark_mode_time");
-
-	return fileConfigs;
+	params.light_mode_time = getParamChar(path, "light_mode_time");
+	params.dark_mode_time = getParamChar(path, "dark_mode_time");
 }
 

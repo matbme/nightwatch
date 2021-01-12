@@ -6,4 +6,4 @@ typedef struct config_params {
 char *getParamChar(char *path, char *param);
 int getParamInt(char *path, char *param);
 
-cf_params *read_config_file(char *path);
+void read_config_file(char *path, cf_params params);
