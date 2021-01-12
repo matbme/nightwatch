@@ -4,11 +4,11 @@
 #include <string.h>
 #include <time.h>
 #include <dirent.h>
+#include "config_params.c"
 
 int main() {
+	cf_params *prms;
 	char *user = getlogin();
-	char ltime[6] = {};
-	char dtime[6] = {};
 	time_t rtime = time(NULL);
 	struct tm *ctime_t = localtime(&rtime);
 	int tNextChange = 0;
@@ -19,27 +19,32 @@ int main() {
 		exit(-1);
 	}
 
-	char path[] = "/home/";
+	char *path = malloc(strlen(user) + 25);
+	strcpy(path, "/home/");
 	strcat(path, user);
 	strcat(path, "/.config/nightwatch");
 
-	char configPath[strlen(path) + 14];
+	char *configPath = malloc(strlen(path) + 14);
 	strcpy(configPath, path);
-	strcat(configPath, "/nightwatchtrc");
+	strcat(configPath, "/nightwatchrc");
 
 	FILE *cfg = fopen(configPath, "r");
 	if (cfg == NULL) {
 		puts("No configuration file detected! Using defaults...");
-		strcpy(ltime, "08:00");
-		strcpy(dtime, "19:36");
+		strcpy(prms->light_mode_time, "08:00");
+		strcpy(prms->dark_mode_time, "20:00");
 	} else {
 		puts("Getting config...");
+		prms = read_config_file(configPath);
+		puts("Config read!");
 	}
 
-	int nl_time = ( (ltime[0] - '0') * 10 + (ltime[1] - '0') ) * 60 +
-				  ( (ltime[3] - '0') * 10 + (ltime[4] - '0') );
-	int nd_time = ( (dtime[0] - '0') * 10 + (dtime[1] - '0') ) * 60 +
-				  ( (dtime[3] - '0') * 10 + (dtime[4] - '0') );
+	printf("%s - %s", prms->light_mode_time, prms->dark_mode_time);
+
+	int nl_time = ( (prms->light_mode_time[0] - '0') * 10 + (prms->light_mode_time[1] - '0') ) * 60 +
+				  ( (prms->light_mode_time[3] - '0') * 10 + (prms->light_mode_time[4] - '0') );
+	int nd_time = ( (prms->dark_mode_time[0] - '0') * 10 + (prms->dark_mode_time[1] - '0') ) * 60 +
+				  ( (prms->dark_mode_time[3] - '0') * 10 + (prms->dark_mode_time[4] - '0') );
 
 	while (1) {
 		// read time
@@ -105,3 +110,4 @@ int main() {
 
 	exit(0);
 }
+// And now my watch has ended.
