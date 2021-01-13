@@ -6,7 +6,10 @@
 #include <dirent.h>
 #include "config_params.c"
 
+#define MAX_SIZE 255
+
 cf_params initParams();
+void saveToLog(char *msg, char *logPath);
 
 int main() {
 	cf_params prms = initParams();
@@ -30,6 +33,10 @@ int main() {
 	char *configPath = malloc(strlen(path) + 14);
 	strcpy(configPath, path);
 	strcat(configPath, "/nightwatchrc");
+
+	char *logPath = malloc(strlen(path) + 4);
+	strcpy(logPath, path);
+	strcat(logPath, "/log");
 
 	FILE *cfg = fopen(configPath, "r");
 	if (cfg == NULL) {
@@ -87,7 +94,13 @@ int main() {
 					memcpy(filePath, "sh ", 3);
 
 					printf("Executing script %s\n", filePath);
-					system(filePath);
+					int out = system(filePath); 
+					if (out != 0) {
+						char *msg = malloc(strlen(filePath) + 41);
+						strcpy(msg, "Script exited with non-zero status code: ");
+						strcat(msg, filePath);
+						saveToLog(msg, logPath);
+					}
 
 					for(int i = 0 ; i < sizeof(filePath) ; i++) {
 						filePath[i] = 0;
@@ -116,6 +129,25 @@ cf_params initParams() {
 	};
 
 	return fileConfigs;
+}
+
+void saveToLog(char *msg, char *logPath) {
+	FILE *log;
+	time_t rtime = time(NULL);
+	struct tm *ctime_t = localtime(&rtime);
+
+	if ( (log = fopen(logPath, "a+")) != NULL ) {
+		fprintf(log, "%d-%02d-%02d %02d:%02d:%02d - ",
+				ctime_t->tm_year + 1900,
+				ctime_t->tm_mon + 1,
+				ctime_t->tm_mday,
+				ctime_t->tm_hour,
+				ctime_t->tm_min,
+				ctime_t->tm_sec);
+		fputs(msg, log);
+		fputs("\n", log);
+		fclose(log);
+	}
 }
 
 // And now my watch has ended.
