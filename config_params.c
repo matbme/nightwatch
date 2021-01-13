@@ -8,14 +8,31 @@
 
 char *getParamChar(char *path, char *param) {
 	FILE *fp;
-	char buf[MAX_SIZE];
+	char buf[MAX_SIZE] = {};
 	char *tok;
 
 	if ( (fp = fopen(path, "r") ) != NULL) {
 		while(fgets(buf, MAX_SIZE, fp) != NULL) {
+			/* Ignore comments and whitespaces */
+			if ( (buf[0] == '#') || (buf[0] == '\n') ) 
+				continue;
+
+			/* Find parameter line and return its value */
 			tok = strtok(buf, CONFIG_FILE_SEPARATOR);
 			if ( !strcmp(param, tok) ) {
-				return strdup(strtok(0, CONFIG_FILE_SEPARATOR));
+				char *param = strdup(strtok(0, CONFIG_FILE_SEPARATOR));
+
+				char filtered_param[sizeof(param) - 3] = {};
+				int i = 0;
+				while (param[i] != '\n') { 
+					if (param[i] != '"')
+						strcat(filtered_param, &param[i]);
+					i++;
+				}
+
+				free(param);
+				fclose(fp);
+				return strdup(filtered_param);
 			}
 		}
 	}
@@ -29,9 +46,8 @@ int getParamInt(char *path, char *param) {
 	return 0;
 }
 
-void read_config_file(char *path, cf_params params) {
-	// TODO: Check if value is not in config file
-	params.light_mode_time = getParamChar(path, "light_mode_time");
-	params.dark_mode_time = getParamChar(path, "dark_mode_time");
+void read_config_file(char *path, cf_params *params) {
+	params->light_mode_time = getParamChar(path, "light_mode_time");
+	params->dark_mode_time = getParamChar(path, "dark_mode_time");
 }
 

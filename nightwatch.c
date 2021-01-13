@@ -36,7 +36,7 @@ int main() {
 		puts("No configuration file detected! Using defaults...");
 	} else {
 		puts("Getting config...");
-		read_config_file(configPath, prms);
+		read_config_file(configPath, &prms);
 		puts("Config read!");
 	}
 
@@ -53,7 +53,6 @@ int main() {
 		// determine state
 		int nc_time = ctime_t -> tm_hour * 60 + ctime_t -> tm_min;
 
-		puts(path);
 		char *modePath = malloc(strlen(path) + 11);
 		if (nc_time > nl_time && nc_time < nd_time) {
 			strcpy(modePath, path);
