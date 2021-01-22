@@ -7,6 +7,7 @@
 #include "config_params.c"
 
 #define MAX_SIZE 255
+#define GEOCLUE_TIMEOUT 30
 
 cf_params initParams();
 void saveToLog(char *msg, char *logPath);
@@ -28,7 +29,7 @@ int main() {
 	char *path = malloc(strlen(user) + 25);
 	strcpy(path, "/home/");
 	strcat(path, user);
-	strcat(path, "/.config/nightwatch");
+	strcat(path, "/.config/nightwatch"); 
 
 	char *configPath = malloc(strlen(path) + 14);
 	strcpy(configPath, path);
@@ -51,6 +52,8 @@ int main() {
 				  ( (prms.light_mode_time[3] - '0') * 10 + (prms.light_mode_time[4] - '0') );
 	int nd_time = ( (prms.dark_mode_time[0] - '0') * 10 + (prms.dark_mode_time[1] - '0') ) * 60 +
 				  ( (prms.dark_mode_time[3] - '0') * 10 + (prms.dark_mode_time[4] - '0') );
+
+	system("/usr/lib/geoclue-2.0/demos/where-am-i"); //TODO: append path here
 
 	while (1) {
 		// read time
@@ -109,7 +112,7 @@ int main() {
 			}
 			closedir(dir);
 		} else {
-			puts("Failed to locate themes folder!");
+			puts("Failed to locate scripts folder!");
 			exit(-1);
 		}
 
