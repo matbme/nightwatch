@@ -5,14 +5,22 @@
 #include <time.h>
 #include <dirent.h>
 #include "config_params.c"
+#include "options.c"
 
 #define MAX_SIZE 255
 #define GEOCLUE_TIMEOUT 30
 
-cf_params initParams();
+int watcher();
 void saveToLog(char *msg, char *logPath);
 
-int main() {
+int main(int argc, char **argv) {
+	if (argc == 1) watcher();
+		else parse_args(argc, argv);
+
+	return 0;
+}
+
+int watcher() {
 	cf_params prms = initParams();
 
 	char *user = getlogin();
@@ -53,7 +61,7 @@ int main() {
 	int nd_time = ( (prms.dark_mode_time[0] - '0') * 10 + (prms.dark_mode_time[1] - '0') ) * 60 +
 				  ( (prms.dark_mode_time[3] - '0') * 10 + (prms.dark_mode_time[4] - '0') );
 
-	system("/usr/lib/geoclue-2.0/demos/where-am-i"); //TODO: append path here
+	// system("/usr/lib/geoclue-2.0/demos/where-am-i"); //TODO: append path here
 
 	while (1) {
 		// read time
@@ -122,16 +130,7 @@ int main() {
 		sleep(tNextChange * 60);
 	}
 
-	exit(0);
-}
-
-cf_params initParams() {
-	cf_params fileConfigs = {
-		.light_mode_time = "08:00",
-		.dark_mode_time = "20:00"
-	};
-
-	return fileConfigs;
+	return 0;
 }
 
 void saveToLog(char *msg, char *logPath) {

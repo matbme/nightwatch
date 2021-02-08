@@ -6,6 +6,18 @@
 #define MAX_SIZE 255
 #define CONFIG_FILE_SEPARATOR " = "
 
+#ifndef CONFIG_PARAMS_C_
+# define CONFIG_PARAMS_C_
+
+cf_params initParams() {
+	cf_params fileConfigs = {
+		.light_mode_time = "08:00",
+		.dark_mode_time = "20:00"
+	};
+
+	return fileConfigs;
+}
+
 char *getParamChar(char *path, char *param) {
 	FILE *fp;
 	char buf[MAX_SIZE] = {};
@@ -50,4 +62,4 @@ void read_config_file(char *path, cf_params *params) {
 	params->light_mode_time = getParamChar(path, "light_mode_time");
 	params->dark_mode_time = getParamChar(path, "dark_mode_time");
 }
-
+#endif
