@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "config_params.h"
 
 #define MAX_SIZE 255
@@ -12,13 +13,16 @@
 cf_params initParams() {
 	cf_params fileConfigs = {
 		.light_mode_time = "08:00",
-		.dark_mode_time = "20:00"
+		.dark_mode_time = "20:00",
+		.latitude = 0,
+		.longitude = 0,
+		.use_sun_times = false
 	};
 
 	return fileConfigs;
 }
 
-char *getParamChar(char *path, char *param) {
+char *readFile(char *path, char *param) {
 	FILE *fp;
 	char buf[MAX_SIZE] = {};
 	char *tok;
@@ -32,24 +36,29 @@ char *getParamChar(char *path, char *param) {
 			/* Find parameter line and return its value */
 			tok = strtok(buf, CONFIG_FILE_SEPARATOR);
 			if ( !strcmp(param, tok) ) {
-				char *param = strdup(strtok(0, CONFIG_FILE_SEPARATOR));
-
-				char filtered_param[sizeof(param) - 3] = {};
-				int i = 0;
-				while (param[i] != '\n') { 
-					if (param[i] != '"')
-						strcat(filtered_param, &param[i]);
-					i++;
-				}
-
-				free(param);
+				char *val = strdup(strtok(0, CONFIG_FILE_SEPARATOR));
 				fclose(fp);
-				return strdup(filtered_param);
+				return val;
 			}
 		}
 	}
 
 	return 0;
+}
+
+char *getParamChar(char *path, char *param) {
+	char *val = readFile(path, param);
+	char filtered_val[sizeof(val) - 3] = {};
+	int i = 0;
+
+	while (i < strlen(val) - 1) { 
+		if (val[i] != '"') {
+			strncat(filtered_val, &val[i], 1);
+		}
+		i++;
+	}
+
+	return strdup(filtered_val);
 }
 
 int getParamInt(char *path, char *param) {
@@ -58,8 +67,22 @@ int getParamInt(char *path, char *param) {
 	return 0;
 }
 
+float getParamFloat(char *path, char *param) {
+	char *val = readFile(path, param);
+	return atof(val);
+}
+
+bool getParamBool(char *path, char *param) {
+	char *val = readFile(path, param);
+	return (int) strcmp(val, "true\n") == 0 ? true: false;
+}
+
 void read_config_file(char *path, cf_params *params) {
+	// TODO: Iterate automatically
 	params->light_mode_time = getParamChar(path, "light_mode_time");
 	params->dark_mode_time = getParamChar(path, "dark_mode_time");
+	params->latitude = getParamFloat(path, "latitude");
+	params->longitude = getParamFloat(path, "longitude");
+	params->use_sun_times = getParamBool(path, "use_sun_times");
 }
 #endif

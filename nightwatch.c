@@ -4,8 +4,10 @@
 #include <string.h>
 #include <time.h>
 #include <dirent.h>
+
 #include "config_params.c"
 #include "options.c"
+#include "suntime.c"
 
 #define MAX_SIZE 255
 #define GEOCLUE_TIMEOUT 30
@@ -56,12 +58,25 @@ int watcher() {
 		puts("Config read!");
 	}
 
-	int nl_time = ( (prms.light_mode_time[0] - '0') * 10 + (prms.light_mode_time[1] - '0') ) * 60 +
-				  ( (prms.light_mode_time[3] - '0') * 10 + (prms.light_mode_time[4] - '0') );
-	int nd_time = ( (prms.dark_mode_time[0] - '0') * 10 + (prms.dark_mode_time[1] - '0') ) * 60 +
-				  ( (prms.dark_mode_time[3] - '0') * 10 + (prms.dark_mode_time[4] - '0') );
+	int nl_time;
+	int nd_time;
 
-	// system("/usr/lib/geoclue-2.0/demos/where-am-i"); //TODO: append path here
+	if (prms.use_sun_times) {
+		char *sunrise = malloc(6);
+		char *sunset = malloc(6);
+
+		get_sun_times(&sunrise, &sunset, &prms);
+
+		nl_time = ( (sunrise[0] - '0') * 10 + (sunrise[1] - '0') ) * 60 +
+		   	  ( (sunrise[3] - '0') * 10 + (sunrise[4] - '0') );
+		nd_time = ( (sunset[0] - '0') * 10 + (sunset[1] - '0') ) * 60 +
+					  ( (sunset[3] - '0') * 10 + (sunset[4] - '0') );
+	} else {
+		nl_time = ( (prms.light_mode_time[0] - '0') * 10 + (prms.light_mode_time[1] - '0') ) * 60 +
+		   	  ( (prms.light_mode_time[3] - '0') * 10 + (prms.light_mode_time[4] - '0') );
+		nd_time = ( (prms.dark_mode_time[0] - '0') * 10 + (prms.dark_mode_time[1] - '0') ) * 60 +
+					  ( (prms.dark_mode_time[3] - '0') * 10 + (prms.dark_mode_time[4] - '0') );
+	}
 
 	while (1) {
 		// read time
