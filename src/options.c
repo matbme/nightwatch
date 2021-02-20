@@ -15,10 +15,9 @@ void parse_args(int argc, char **argv) {
 
 void dump_defaults() {
 	cf_params prms = initParams();
-	char **ptr = &(prms.light_mode_time);
 
-	for (int i = 0 ; i < sizeof(prms)/sizeof(char*) ; i++) {
-		printf("%s -> %s\n", cf_params_names[i], *ptr);
-		ptr += (sizeof(*ptr)/sizeof(char*));
-	}
+	#define X(type, name, format) \
+         printf("%s -> "format"\n", #name, prms.name);
+	X_FIELDS
+	#undef X
 }

@@ -1,3 +1,6 @@
+#ifndef CONFIG_PARAMS_C_
+# define CONFIG_PARAMS_C_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,8 +10,12 @@
 #define MAX_SIZE 255
 #define CONFIG_FILE_SEPARATOR " = "
 
-#ifndef CONFIG_PARAMS_C_
-# define CONFIG_PARAMS_C_
+#define typename(x) _Generic((x), \
+    int:     getParamInt(path, var_name), \
+    float:   getParamFloat(path, var_name), \
+	char *:  getParamChar(path, var_name), \
+	bool:	 getParamBool(path, var_name), \
+    default: "other")
 
 cf_params initParams() {
 	cf_params fileConfigs = {
@@ -78,11 +85,11 @@ bool getParamBool(char *path, char *param) {
 }
 
 void read_config_file(char *path, cf_params *params) {
-	// TODO: Iterate automatically
-	params->light_mode_time = getParamChar(path, "light_mode_time");
-	params->dark_mode_time = getParamChar(path, "dark_mode_time");
-	params->latitude = getParamFloat(path, "latitude");
-	params->longitude = getParamFloat(path, "longitude");
-	params->use_sun_times = getParamBool(path, "use_sun_times");
+	char *var_name;
+#define X(type, name, format) \
+		var_name = #name; \
+		params->name = typename(params->name);
+	X_FIELDS
+#undef X
 }
 #endif

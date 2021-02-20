@@ -3,12 +3,17 @@
 
 #include <stdbool.h>
 
+#define X_FIELDS \
+	X(char *, light_mode_time, "%s") \
+	X(char *, dark_mode_time, "%s") \
+	X(float, latitude, "%f") \
+	X(float, longitude, "%f") \
+	X(bool, use_sun_times, "%1d")
+
 typedef struct config_params {
-	char *light_mode_time;
-	char *dark_mode_time;
-	float latitude;
-	float longitude;
-	bool use_sun_times;
+#define X(type, name, format) type name;
+	X_FIELDS
+#undef X
 } cf_params;
 
 static const char *cf_params_names[] = {"light_mode_time", "dark_mode_time", "latitude", "longitude", "sunrise_time", "sunset_time", "use_sun_times"};
