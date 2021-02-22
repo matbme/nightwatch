@@ -4,43 +4,59 @@
 #include <string.h>
 #include <time.h>
 #include <dirent.h>
+#include <stdbool.h>
 
 #include "config_params.h"
 #include "suntime.h"
 #include "options.h"
 
-int watcher();
+#define MAX_SIZE 255
+#define verbose_print(fmt, args...) \
+	if (verbose) printf("Nightwatch: "fmt, ##args)
+
+int watcher(bool verbose, char *cpath);
 void saveToLog(char *msg, char *logPath);
 
 int main(int argc, char **argv) {
-	if (argc == 1) watcher();
-		else parse_args(argc, argv);
+	bool verbose = false;
+	char *cpath = "";
+
+	if (argc == 1) watcher(verbose, cpath);
+	else {
+		bool run = parse_args(argc, argv, &verbose, &cpath);
+		if (run) watcher(verbose, cpath);
+	}
 
 	return 0;
 }
 
-int watcher() {
+int watcher(bool verbose, char *cpath) {
 	cf_params prms = initParams();
 
-	char *user = getlogin();
 	time_t rtime = time(NULL);
 	struct tm *ctime_t = localtime(&rtime);
 	int tNextChange = 0;
 
-	// read config file
-	if (user == NULL) {
-		puts("Unable to get current user!");
-		exit(-1);
+	char path[MAX_SIZE] = {};
+	char configPath[MAX_SIZE] = {};
+	if (!strcmp(cpath, "")) {
+		char *user = getlogin();
+
+		if (user == NULL) {
+			puts("Unable to get current user!");
+			exit(-1);
+		}
+
+		strcpy(path, "/home/");
+		strcat(path, user);
+		strcat(path, "/.config/nightwatch"); 
+
+		strcpy(configPath, path);
+		strcat(configPath, "/nightwatchrc");
+	} else {
+		snprintf(path, strlen(cpath) + 1, "%s", cpath);
+		snprintf(configPath, strlen(path) + 14, "%s/nightwatchrc", path);
 	}
-
-	char *path = malloc(strlen(user) + 25);
-	strcpy(path, "/home/");
-	strcat(path, user);
-	strcat(path, "/.config/nightwatch"); 
-
-	char *configPath = malloc(strlen(path) + 14);
-	strcpy(configPath, path);
-	strcat(configPath, "/nightwatchrc");
 
 	char *logPath = malloc(strlen(path) + 4);
 	strcpy(logPath, path);
@@ -48,11 +64,11 @@ int watcher() {
 
 	FILE *cfg = fopen(configPath, "r");
 	if (cfg == NULL) {
-		puts("No configuration file detected! Using defaults...");
+		verbose_print("No configuration file detected! Using defaults...\n");
 	} else {
-		puts("Getting config...");
+		verbose_print("Getting config...\n");
 		read_config_file(configPath, &prms);
-		puts("Config read!");
+		verbose_print("Config read!\n");
 	}
 
 	int nl_time;
@@ -100,7 +116,7 @@ int watcher() {
 			}
 		}
 
-		printf("\nTime until next change: %d minutes\n", tNextChange);
+		verbose_print("Time until next change: %d minutes\n", tNextChange);
 
 		char *filePath = calloc(strlen(modePath) + 255, sizeof(char));
 
@@ -116,7 +132,7 @@ int watcher() {
 					memmove(filePath + 3, filePath, strlen(filePath) + 1);
 					memcpy(filePath, "sh ", 3);
 
-					printf("Executing script %s\n", filePath);
+					verbose_print("Executing script %s\n", filePath);
 					int out = system(filePath); 
 					if (out != 0) {
 						char *msg = malloc(strlen(filePath) + 41);

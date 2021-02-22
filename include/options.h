@@ -4,13 +4,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <stdbool.h>
 #include "config_params.h"
 
 static struct option long_options[] = {
-	{"defaults", no_argument, NULL, 'd'}
+	{"defaults", no_argument, NULL, 'd'},
+	{"verbose", no_argument, NULL, 'v'},
+	{"configPath", required_argument, NULL, 'c'}
 };
 
-void parse_args(int argc, char **argv);
+bool parse_args(int argc, char **argv, bool *v, char **c);
 void dump_defaults();
 
 #endif

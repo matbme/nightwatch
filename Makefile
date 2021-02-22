@@ -1,19 +1,19 @@
-IDIR =include
-CC=gcc
-CFLAGS=-I$(IDIR)
+IDIR 	= include
+CC		= gcc
+CFLAGS  = -I$(IDIR)
 
-ODIR=src/obj
-LDIR =lib
+ODIR	= src/obj
+LDIR 	= lib
 
-LIBS=-lm
+LIBS 	= -lm
 
-_DEPS = config_params.h options.h suntime.h
-DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
+_DEPS 	= config_params.h options.h suntime.h
+DEPS 	= $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = nightwatch.o config_params.o options.o suntime.o 
-OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+_OBJ 	= nightwatch.o config_params.o options.o suntime.o 
+OBJ 	= $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-VPATH=src
+VPATH	= src
 
 $(ODIR)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -21,7 +21,10 @@ $(ODIR)/%.o: %.c $(DEPS)
 nightwatch: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-.PHONY: clean
+debug: CFLAGS += -g
+debug: nightwatch
 
 clean:
-	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ 
+	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ nightwatch
+
+.PHONY: clean debug

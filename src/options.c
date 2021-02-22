@@ -1,16 +1,26 @@
 #include "options.h"
 
-void parse_args(int argc, char **argv) {
+bool parse_args(int argc, char **argv, bool *v, char **c) {
 	char ch;
-	while ((ch = getopt_long(argc, argv, "d", long_options, NULL)) != -1) {
+	bool retval = false;
+
+	while ((ch = getopt_long(argc, argv, "dvc:", long_options, NULL)) != -1) {
 		switch (ch) {
 			case 'd':
 				dump_defaults();
 				break;
+			case 'v':
+				*v = true;
+				retval = true;
+				break;
+			case 'c':
+				*c = optarg;
+				retval = true;
+				break;
 		}
 	}
 
-	return;
+	return retval;
 }
 
 void dump_defaults() {
